@@ -1,17 +1,21 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-
 package com.mycompany.taskmanagercrud;
+
+import com.mongodb.client.MongoDatabase;
 
 /**
  *
- * @author thier
+ * @author Thierry
  */
+
 public class TaskManagerCRUD {
 
     public static void main(String[] args) {
-        ConexaoMongo.conectar();
+    MongoDatabase db = ConexaoMongo.conectar();
+    TarefaDAO dao = new TarefaDAO(db);
+
+    Tarefa nova = new Tarefa("Estudar Java", "Revisar orientação a objetos", "Alta");
+    dao.adicionarTarefa(nova);
+    System.out.println("Tarefa adicionada!");
     }
 }
 
