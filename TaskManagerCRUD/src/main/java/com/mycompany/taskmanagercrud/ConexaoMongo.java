@@ -15,7 +15,7 @@ public class ConexaoMongo {
     public static MongoDatabase conectar() {
         if (mongoClient == null) {
             mongoClient = MongoClients.create("mongodb://localhost:27017");
-            database = mongoClient.getDatabase("TaskManager");
+            database = mongoClient.getDatabase("TaskManagerCRUD");
             }
         
         System.out.println("Conectado com sucesso ao MongoDB local!");

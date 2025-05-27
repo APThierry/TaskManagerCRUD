@@ -1,10 +1,8 @@
 package com.mycompany.taskmanagercrud;
 
 /**
- *
- * @author Thierry
+ * Classe que representa uma tarefa.
  */
-
 public class Tarefa {
     private String id;
     private String titulo;
@@ -12,6 +10,7 @@ public class Tarefa {
     private String prioridade;
     private boolean concluida;
 
+    // Construtor da Tarefa
     public Tarefa(String titulo, String descricao, String prioridade) {
         this.titulo = titulo;
         this.descricao = descricao;
@@ -19,42 +18,41 @@ public class Tarefa {
         this.concluida = false;
     }
 
-    // Getters
+    // Getters e Setters
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getTitulo() {
         return titulo;
     }
 
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public String getPrioridade() {
-        return prioridade;
-    }
-
-    public boolean isConcluida() {
-        return concluida;
-    }
-
-    // Setters
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public void setTitulo(String titulo) {
         this.titulo = titulo;
+    }
+
+    public String getDescricao() {
+        return descricao;
     }
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
 
+    public String getPrioridade() {
+        return prioridade;
+    }
+
     public void setPrioridade(String prioridade) {
         this.prioridade = prioridade;
+    }
+
+    public boolean isConcluida() {
+        return concluida;
     }
 
     public void setConcluida(boolean concluida) {
