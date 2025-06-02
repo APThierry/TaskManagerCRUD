@@ -165,8 +165,7 @@ Se der erro, verifique:
 
 ## 👨‍💻 Próximos passos
 
-- Implementar as operações de **Create, Read, Update e Delete**  
-- Criar interface gráfica (opcional)  
+- Implementar as operações de **Create, Read, Update e Delete**   
 - Salvar dados das tarefas no MongoDB  
 
 ---
