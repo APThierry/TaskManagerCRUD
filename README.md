@@ -163,10 +163,38 @@ Se der erro, verifique:
 
 ---
 
-## 👨‍💻 Próximos passos
+## 🔍 Explicação das Classes
 
-- Implementar as operações de **Create, Read, Update e Delete**   
-- Salvar dados das tarefas no MongoDB  
+### 📄 **Tarefa.java**
+- É a classe **modelo**.
+- Representa a estrutura de uma tarefa no sistema.
+- Atributos:
+  - `id`: identificador gerado pelo MongoDB.
+  - `titulo`: título da tarefa.
+  - `descricao`: detalhes da tarefa.
+  - `prioridade`: prioridade da tarefa (ex.: Alta, Média, Baixa).
+  - `status`: situação da tarefa (ex.: Pendente, Concluído).
+
+### 🔗 **ConexaoMongo.java**
+- Responsável por fazer a conexão com o banco MongoDB.
+- Se conecta ao banco `TaskManagerCRUD` na instância local (`localhost:27017`).
+- Fornece essa conexão para a classe DAO acessar os dados.
+
+### 🗂️ **TarefaDAO.java**
+- É a classe que faz a ponte entre a aplicação e o MongoDB.
+- Contém os métodos CRUD:
+  - `create(Tarefa tarefa)`: Insere uma nova tarefa no banco.
+  - `read()`: Lista todas as tarefas salvas.
+  - `update(Tarefa tarefa)`: Atualiza os dados de uma tarefa existente.
+  - `delete(String id)`: Remove uma tarefa pelo seu ID.
+- Faz a conversão de objetos Java para documentos BSON e vice-versa.
+
+### 🖥️ **TaskManagerCRUD.java**
+- Classe principal do sistema.
+- Permite que o usuário interaja com o sistema:
+  - Adicionando, editando, removendo ou listando tarefas.
+- Faz chamadas diretas aos métodos da classe **TarefaDAO.java**.
+- Garante que qualquer ação realizada na interface atualiza diretamente o banco de dados.
 
 ---
 
