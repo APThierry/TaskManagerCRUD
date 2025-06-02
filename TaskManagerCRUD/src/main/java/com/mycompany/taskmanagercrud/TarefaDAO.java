@@ -12,6 +12,7 @@ import org.bson.types.ObjectId;
 
 /**
  * @author Thierry
+ * @author Nathan
  * 
  * DAO (Data Access Object) para a entidade {@link Tarefa}.
  * Esta classe encapsula toda a lógica de acesso e manipulação dos dados das tarefas

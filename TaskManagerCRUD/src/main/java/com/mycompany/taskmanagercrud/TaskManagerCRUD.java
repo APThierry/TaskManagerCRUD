@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 /**
  * @author Thierry
+ * @author Nathan
  * 
  * Permite ao usuário interagir com o sistema para adicionar, listar, editar,
  * marcar como concluída/pendente e excluir tarefas através de um menu no console.
@@ -192,7 +193,7 @@ public class TaskManagerCRUD {
             if (indiceSelecionado >= 0 && indiceSelecionado < tarefas.size()) {
                 Tarefa tarefaParaEditar = tarefas.get(indiceSelecionado);
                 System.out.println("Editando tarefa: " + tarefaParaEditar.getTitulo());
-                System.out.println("Deixe em branco para não alterar o campo.");
+                System.out.println("Deixe em branco para nao alterar o campo.");
 
                 System.out.print("Novo Titulo (" + tarefaParaEditar.getTitulo() + "): ");
                 String novoTitulo = sc.nextLine().trim();
