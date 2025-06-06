@@ -7,6 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.util.List;
+import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  * Classe principal que cria e gerencia a Interface Gráfica do Usuário (GUI)
@@ -27,14 +28,12 @@ public class TaskManagerCRUD extends JFrame {
     private JTable tabelaTarefas;
     /** Modelo de dados para a tabela, para facilitar a manipulação. */
     private DefaultTableModel tableModel;
-
     /** Campo de texto para o título da tarefa. */
     private JTextField campoTitulo;
     /** Área de texto para a descrição da tarefa. */
     private JTextArea campoDescricao;
     /** Caixa de combinação para selecionar a prioridade. */
     private JComboBox<String> comboBoxPrioridade;
-
     /** Botão para adicionar uma nova tarefa ou salvar uma tarefa editada. */
     private JButton botaoAdicionarSalvar;
     /** Botão para limpar os campos do formulário. */
@@ -72,14 +71,17 @@ public class TaskManagerCRUD extends JFrame {
         criarPainelFormulario();
         criarPainelTabela();
         criarPainelAcoesTabela();
-
-        // 4. Configura os eventos dos botões
+        
+        // 4. Configura a lógica de ativação/desativação dos botões baseada na seleção da tabela.
+        configurarSelecaoTabela();
+        
+        // 5. Configura os eventos dos botões
         configurarActionListeners();
 
-        // 5. Carrega as tarefas iniciais na tabela
+        // 6. Carrega as tarefas iniciais na tabela
         atualizarTabelaTarefas();
-
-        // 6. Torna a janela visível
+        
+        // 7. Torna a janela visível
         setVisible(true);
     }
 
@@ -117,9 +119,13 @@ public class TaskManagerCRUD extends JFrame {
 
         JPanel painelBotoesFormulario = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
         botaoAdicionarSalvar = new JButton("Adicionar Tarefa");
+        botaoAdicionarSalvar.setToolTipText("Adiciona uma nova tarefa ou salva as alterações de uma tarefa existente.");
         painelBotoesFormulario.add(botaoAdicionarSalvar);
+        
         botaoLimpar = new JButton("Limpar");
+        botaoLimpar.setToolTipText("Limpa todos os campos do formulário.");
         painelBotoesFormulario.add(botaoLimpar);
+        
         gbc.gridx = 1; gbc.gridy = 3; gbc.fill = GridBagConstraints.NONE; gbc.anchor = GridBagConstraints.EAST; gbc.weightx = 0;
         painelFormulario.add(painelBotoesFormulario, gbc);
 
@@ -133,13 +139,10 @@ public class TaskManagerCRUD extends JFrame {
         String[] colunas = {"ID", "Título", "Descrição", "Prioridade", "Concluída"};
         tableModel = new DefaultTableModel(colunas, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Células não editáveis
-            }
-
+            public boolean isCellEditable(int row, int column) { return false; }
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                return columnIndex == 4 ? Boolean.class : String.class; // Para renderizar checkbox
+                return columnIndex == 4 ? Boolean.class : String.class;
             }
         };
         tabelaTarefas = new JTable(tableModel);
@@ -154,6 +157,9 @@ public class TaskManagerCRUD extends JFrame {
         columnModel.getColumn(2).setPreferredWidth(350);
         columnModel.getColumn(3).setPreferredWidth(100);
         columnModel.getColumn(4).setPreferredWidth(80);
+        
+        // Aplica o renderizador de cores à coluna de prioridade.
+        columnModel.getColumn(3).setCellRenderer(new PrioridadeCellRenderer());
 
         add(new JScrollPane(tabelaTarefas), BorderLayout.CENTER);
     }
@@ -163,15 +169,43 @@ public class TaskManagerCRUD extends JFrame {
      */
     private void criarPainelAcoesTabela() {
         JPanel painelAcoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        
         botaoCarregarParaEditar = new JButton("Carregar para Editar");
+        botaoCarregarParaEditar.setToolTipText("Carrega os dados da tarefa selecionada no formulário acima para edição.");
         painelAcoes.add(botaoCarregarParaEditar);
+        
         botaoAlternarStatus = new JButton("Alternar Status");
+        botaoAlternarStatus.setToolTipText("Alterna o status da tarefa selecionada entre 'Concluída' e 'Pendente'.");
         painelAcoes.add(botaoAlternarStatus);
+        
         botaoExcluir = new JButton("Excluir Selecionada");
-        botaoExcluir.setBackground(new Color(220, 53, 69)); // Cor vermelha
+        botaoExcluir.setToolTipText("Exclui permanentemente a tarefa selecionada da base de dados.");
+        botaoExcluir.setBackground(new Color(220, 53, 69));
         botaoExcluir.setForeground(Color.WHITE);
         painelAcoes.add(botaoExcluir);
+        
         add(painelAcoes, BorderLayout.SOUTH);
+    }
+
+    /**
+     * Configura um listener para a seleção de linhas na tabela,
+     * ativando ou desativando os botões de ação conforme necessário.
+     */
+    private void configurarSelecaoTabela() {
+        // Inicialmente, desativa os botões, pois nenhuma linha está selecionada.
+        botaoCarregarParaEditar.setEnabled(false);
+        botaoAlternarStatus.setEnabled(false);
+        botaoExcluir.setEnabled(false);
+
+        // Adiciona um ouvinte de eventos à seleção da tabela.
+        tabelaTarefas.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                boolean linhaSelecionada = tabelaTarefas.getSelectedRow() != -1;
+                botaoCarregarParaEditar.setEnabled(linhaSelecionada);
+                botaoAlternarStatus.setEnabled(linhaSelecionada);
+                botaoExcluir.setEnabled(linhaSelecionada);
+            }
+        });
     }
 
     /**
@@ -198,11 +232,11 @@ public class TaskManagerCRUD extends JFrame {
             return;
         }
 
-        if (idTarefaEmEdicao == null) { // Modo ADICIONAR
+        if (idTarefaEmEdicao == null) {
             Tarefa novaTarefa = new Tarefa(titulo, descricao, prioridade);
             tarefaDAO.adicionarTarefa(novaTarefa);
             JOptionPane.showMessageDialog(this, "Tarefa adicionada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-        } else { // Modo SALVAR (Update)
+        } else {
             boolean sucesso = tarefaDAO.atualizarTarefa(idTarefaEmEdicao, titulo, descricao, prioridade);
             if (sucesso) {
                 JOptionPane.showMessageDialog(this, "Tarefa atualizada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
@@ -220,6 +254,7 @@ public class TaskManagerCRUD extends JFrame {
     private void carregarTarefaParaEdicao() {
         int linhaSelecionada = tabelaTarefas.getSelectedRow();
         if (linhaSelecionada == -1) {
+            // Esta verificação é redundante se os botões estiverem desativados, mas é uma boa prática mantê-la.
             JOptionPane.showMessageDialog(this, "Selecione uma tarefa na tabela para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -242,10 +277,7 @@ public class TaskManagerCRUD extends JFrame {
      */
     private void excluirTarefa() {
         int linhaSelecionada = tabelaTarefas.getSelectedRow();
-        if (linhaSelecionada == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione uma tarefa para excluir!", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        if (linhaSelecionada == -1) { return; }
 
         String id = (String) tableModel.getValueAt(linhaSelecionada, 0);
         String titulo = (String) tableModel.getValueAt(linhaSelecionada, 1);
@@ -272,10 +304,7 @@ public class TaskManagerCRUD extends JFrame {
      */
     private void alternarStatusTarefa() {
         int linhaSelecionada = tabelaTarefas.getSelectedRow();
-        if (linhaSelecionada == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione uma tarefa para alterar o status!", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        if (linhaSelecionada == -1) { return; }
 
         String id = (String) tableModel.getValueAt(linhaSelecionada, 0);
         boolean statusAtual = (Boolean) tableModel.getValueAt(linhaSelecionada, 4);
@@ -297,6 +326,7 @@ public class TaskManagerCRUD extends JFrame {
         idTarefaEmEdicao = null;
         botaoAdicionarSalvar.setText("Adicionar Tarefa");
         setTitle("Sistema de Gerenciamento de Tarefas (Swing)");
+        tabelaTarefas.clearSelection(); // Limpa a seleção da tabela
         campoTitulo.requestFocusInWindow();
     }
 
@@ -305,15 +335,11 @@ public class TaskManagerCRUD extends JFrame {
      */
     private void atualizarTabelaTarefas() {
         int linhaSelecionadaAnteriormente = tabelaTarefas.getSelectedRow();
-        tableModel.setRowCount(0); // Limpa a tabela
+        tableModel.setRowCount(0);
         List<Tarefa> tarefas = tarefaDAO.listarTarefas();
         for (Tarefa t : tarefas) {
             tableModel.addRow(new Object[]{
-                    t.getId(),
-                    t.getTitulo(),
-                    t.getDescricao(),
-                    t.getPrioridade(),
-                    t.isConcluida()
+                    t.getId(), t.getTitulo(), t.getDescricao(), t.getPrioridade(), t.isConcluida()
             });
         }
         if (linhaSelecionadaAnteriormente != -1 && linhaSelecionadaAnteriormente < tableModel.getRowCount()) {
@@ -322,19 +348,38 @@ public class TaskManagerCRUD extends JFrame {
     }
 
     /**
+     * Uma classe interna para personalizar a renderização das células da tabela,
+     * especificamente para colorir a prioridade.
+     */
+    private static class PrioridadeCellRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component cellComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (!isSelected) {
+                String prioridade = (String) value;
+                switch (prioridade) {
+                    case "Alta":
+                        cellComponent.setBackground(new Color(255, 220, 220)); // Vermelho claro
+                        break;
+                    case "Média":
+                        cellComponent.setBackground(new Color(255, 255, 210)); // Amarelo claro
+                        break;
+                    default:
+                        cellComponent.setBackground(Color.WHITE); // Cor padrão
+                        break;
+                }
+            }
+            return cellComponent;
+        }
+    }
+
+    /**
      * Ponto de entrada principal para iniciar a aplicação com a GUI Swing.
-     * @param args Argumentos da linha de comando (não utilizados).
      */
     public static void main(String[] args) {
-        // Tenta aplicar um Look and Feel mais moderno para uma aparência melhorada.
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception e) {
-            System.err.println("Look and Feel Nimbus não encontrado. Usando o padrão do sistema.");
-        }
-
-        // Garante que a GUI seja criada e manipulada na Event Dispatch Thread (EDT).
-        // Esta é a forma correta e segura de iniciar aplicações Swing.
-        SwingUtilities.invokeLater(() -> new TaskManagerCRUD());
+        // A forma mais direta e simples de iniciar uma aplicação Swing.
+        // Cria uma nova instância da nossa janela.
+        new TaskManagerCRUD();
     }
 }
